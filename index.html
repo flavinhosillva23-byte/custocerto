@@ -1,164 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Preço Certo</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="Encontre ofertas e compare preços em lojas confiáveis.">
+  <title>Custo Certo — Compare preços e encontre ofertas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="config.js"></script>
+  <script defer src="app.js"></script>
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <p class="eyebrow">MONITOR DE PROMOÇÕES</p>
-      <h1>Preço Certo</h1>
-      <p class="subtitle">Acompanhe produtos e encontre ofertas apenas em lojas verificadas.</p>
-    </div>
-    <button id="openProductModal" class="primary-btn">+ Adicionar produto</button>
+    <a class="logo" href="#" aria-label="Página inicial">
+      <span class="logo-mark">C</span>
+      <span>Custo Certo</span>
+    </a>
+    <nav>
+      <a href="#ofertas">Ofertas</a>
+      <a href="#como-funciona">Como funciona</a>
+    </nav>
   </header>
 
   <main>
-    <section class="summary-grid">
-      <article class="summary-card">
-        <span>Produtos acompanhados</span>
-        <strong id="trackedCount">0</strong>
-      </article>
-      <article class="summary-card">
-        <span>Ofertas dentro da meta</span>
-        <strong id="dealCount">0</strong>
-      </article>
-      <article class="summary-card">
-        <span>Lojas verificadas</span>
-        <strong id="storeCount">0</strong>
-      </article>
-    </section>
+    <section class="hero">
+      <div class="hero-content">
+        <span class="eyebrow">Compare antes de comprar</span>
+        <h1>Encontre o produto certo pelo menor preço</h1>
+        <p>Pesquise TVs, celulares, notebooks, eletrodomésticos e qualquer outro produto. Os resultados levam direto para a loja.</p>
 
-    <section class="panel filters-panel">
-      <div>
-        <label for="searchInput">Pesquisar</label>
-        <input id="searchInput" type="search" placeholder="Produto, marca ou modelo" />
-      </div>
-      <div>
-        <label for="categoryFilter">Categoria</label>
-        <select id="categoryFilter">
-          <option value="">Todas</option>
-        </select>
-      </div>
-      <div>
-        <label for="statusFilter">Situação</label>
-        <select id="statusFilter">
-          <option value="">Todas</option>
-          <option value="deal">Dentro da meta</option>
-          <option value="above">Acima da meta</option>
-          <option value="no-offer">Sem oferta</option>
-        </select>
-      </div>
-    </section>
+        <form id="searchForm" class="search-box">
+          <input id="searchInput" type="search" placeholder="O que você está procurando?" autocomplete="off">
+          <button type="submit">Pesquisar</button>
+        </form>
 
-    <section>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">SEUS PRODUTOS</p>
-          <h2>Lista de acompanhamento</h2>
-        </div>
-        <button id="resetDemo" class="ghost-btn">Restaurar exemplo</button>
-      </div>
-      <div id="productsGrid" class="products-grid"></div>
-      <div id="emptyState" class="empty-state hidden">
-        <h3>Nenhum produto encontrado</h3>
-        <p>Adicione um produto ou altere os filtros.</p>
-      </div>
-    </section>
+        <div id="suggestions" class="suggestions hidden"></div>
 
-    <section class="panel stores-panel">
-      <div class="section-heading compact">
-        <div>
-          <p class="eyebrow">SEGURANÇA</p>
-          <h2>Lojas verificadas</h2>
+        <div class="popular">
+          <span>Buscas populares:</span>
+          <button data-search="TV 55 polegadas">TV 55"</button>
+          <button data-search="Notebook">Notebook</button>
+          <button data-search="Celular">Celular</button>
+          <button data-search="Geladeira">Geladeira</button>
+          <button data-search="Ar condicionado">Ar condicionado</button>
         </div>
       </div>
-      <div id="storesList" class="stores-list"></div>
-      <p class="small-note">Nesta versão, somente ofertas vinculadas a estas lojas aparecem como verificadas.</p>
+    </section>
+
+    <section class="categories" aria-label="Categorias">
+      <button class="category active" data-category="Todos">Todos</button>
+      <button class="category" data-category="TV e Vídeo">TV e Vídeo</button>
+      <button class="category" data-category="Celulares">Celulares</button>
+      <button class="category" data-category="Notebooks">Notebooks</button>
+      <button class="category" data-category="Eletrodomésticos">Eletrodomésticos</button>
+      <button class="category" data-category="Casa e Cozinha">Casa e Cozinha</button>
+      <button class="category" data-category="Outros">Outros</button>
+    </section>
+
+    <section id="ofertas" class="results-section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Ofertas encontradas</span>
+          <h2 id="resultsTitle">Melhores ofertas</h2>
+          <p id="resultCount" class="muted">Carregando produtos...</p>
+        </div>
+
+        <div class="filters">
+          <label>
+            Loja
+            <select id="storeFilter">
+              <option value="">Todas</option>
+            </select>
+          </label>
+          <label>
+            Marca
+            <select id="brandFilter">
+              <option value="">Todas</option>
+            </select>
+          </label>
+          <label>
+            Preço máximo
+            <input id="maxPrice" type="number" min="0" step="50" placeholder="R$">
+          </label>
+          <label>
+            Ordenar
+            <select id="sortFilter">
+              <option value="price_asc">Menor preço</option>
+              <option value="price_desc">Maior preço</option>
+              <option value="recent">Mais recentes</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div id="loading" class="status">Buscando ofertas...</div>
+      <div id="empty" class="status hidden">
+        <strong>Nenhuma oferta encontrada.</strong>
+        <span>Tente outro produto, marca ou faixa de preço.</span>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <section id="como-funciona" class="info-section">
+      <article>
+        <span>1</span>
+        <h3>Pesquise</h3>
+        <p>Digite qualquer produto ou escolha uma categoria.</p>
+      </article>
+      <article>
+        <span>2</span>
+        <h3>Compare</h3>
+        <p>Veja preço, loja, frete, marca e atualização da oferta.</p>
+      </article>
+      <article>
+        <span>3</span>
+        <h3>Compre na loja</h3>
+        <p>O botão abre diretamente o link da oferta, inclusive links de afiliado.</p>
+      </article>
     </section>
   </main>
 
-  <dialog id="productModal">
-    <form id="productForm" method="dialog">
-      <div class="modal-header">
-        <div>
-          <p class="eyebrow">NOVO MONITORAMENTO</p>
-          <h2>Adicionar produto</h2>
+  <footer>
+    <strong>Custo Certo</strong>
+    <p>Os preços podem mudar sem aviso. Confirme o valor e as condições no site da loja antes da compra.</p>
+  </footer>
+
+  <template id="productTemplate">
+    <article class="product-card">
+      <div class="image-wrap">
+        <img class="product-image" alt="">
+        <span class="deal-badge hidden"></span>
+      </div>
+      <div class="product-body">
+        <div class="product-meta">
+          <span class="store-name"></span>
+          <span class="verified">Loja verificada</span>
         </div>
-        <button type="button" id="closeProductModal" class="icon-btn" aria-label="Fechar">×</button>
-      </div>
-
-      <label>Nome do produto
-        <input id="productName" required placeholder="Ex.: TV TCL 55 T6C" />
-      </label>
-
-      <div class="form-row">
-        <label>Categoria
-          <input id="productCategory" required placeholder="Ex.: TV" />
-        </label>
-        <label>Preço máximo
-          <input id="targetPrice" required type="number" min="1" step="0.01" placeholder="2500" />
-        </label>
-      </div>
-
-      <label>Palavras-chave
-        <input id="keywords" placeholder="Ex.: QLED, 55 polegadas, Google TV" />
-      </label>
-
-      <label>Marcas aceitas
-        <input id="brands" placeholder="Ex.: TCL, Samsung, LG" />
-      </label>
-
-      <div class="modal-actions">
-        <button type="button" id="cancelProduct" class="ghost-btn">Cancelar</button>
-        <button type="submit" class="primary-btn">Salvar produto</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="offerModal">
-    <form id="offerForm" method="dialog">
-      <div class="modal-header">
-        <div>
-          <p class="eyebrow">ATUALIZAR PREÇO</p>
-          <h2 id="offerModalTitle">Adicionar oferta</h2>
+        <h3 class="product-name"></h3>
+        <p class="product-brand"></p>
+        <div class="price-block">
+          <span class="old-price"></span>
+          <strong class="price"></strong>
+          <span class="installments"></span>
         </div>
-        <button type="button" id="closeOfferModal" class="icon-btn" aria-label="Fechar">×</button>
+        <p class="shipping"></p>
+        <p class="updated"></p>
+        <a class="buy-button" target="_blank" rel="nofollow sponsored noopener">Ver oferta</a>
       </div>
-
-      <input id="offerProductId" type="hidden" />
-
-      <label>Loja
-        <select id="offerStore" required></select>
-      </label>
-
-      <div class="form-row">
-        <label>Preço encontrado
-          <input id="offerPrice" required type="number" min="1" step="0.01" />
-        </label>
-        <label>Frete
-          <input id="shippingPrice" type="number" min="0" step="0.01" value="0" />
-        </label>
-      </div>
-
-      <label>Link da oferta
-        <input id="offerUrl" type="url" placeholder="https://..." />
-      </label>
-
-      <label>Observação
-        <input id="offerNote" placeholder="Ex.: cupom aplicado, vendido pela loja oficial" />
-      </label>
-
-      <div class="modal-actions">
-        <button type="button" id="cancelOffer" class="ghost-btn">Cancelar</button>
-        <button type="submit" class="primary-btn">Salvar oferta</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script src="app.js"></script>
+    </article>
+  </template>
 </body>
 </html>

@@ -1,302 +1,185 @@
-const STORAGE_KEY = "precoCertoDataV1";
+const cfg = window.CUSTO_CERTO_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const money = (value) => Number(value || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const normalize = (text) => String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 
-const verifiedStores = [
-  "Amazon",
-  "Mercado Livre",
-  "Magazine Luiza",
-  "Casas Bahia",
-  "Shopee"
+const db = cfg.supabaseUrl && cfg.supabasePublishableKey
+  ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey)
+  : null;
+
+const demoProducts = [
+  {
+    id:"demo-1", name:'Smart TV TCL 55" QLED 4K Google TV', brand:"TCL", category:"TV e Vídeo",
+    store:"Mercado Livre", price:2399, old_price:2699, shipping_text:"Frete grátis",
+    installments:"10x de R$ 239,90 sem juros", image_url:"https://http2.mlstatic.com/D_NQ_NP_2X_687956-MLA99999999999_112025-F.webp",
+    affiliate_url:"https://www.mercadolivre.com.br/", is_verified:true, updated_at:new Date().toISOString()
+  },
+  {
+    id:"demo-2", name:'Smart TV LG 55" 4K UHD webOS', brand:"LG", category:"TV e Vídeo",
+    store:"Shopee", price:2499, old_price:2799, shipping_text:"Consulte o frete",
+    installments:"12x disponíveis", image_url:"https://down-br.img.susercontent.com/file/br-11134207-7r98o-placeholder",
+    affiliate_url:"https://shopee.com.br/", is_verified:true, updated_at:new Date().toISOString()
+  },
+  {
+    id:"demo-3", name:"Notebook Acer Aspire 5 16GB 512GB SSD", brand:"Acer", category:"Notebooks",
+    store:"Amazon", price:3299, old_price:3599, shipping_text:"Frete grátis com Prime",
+    installments:"10x de R$ 329,90", image_url:"https://placehold.co/600x450?text=Notebook+Acer",
+    affiliate_url:"https://www.amazon.com.br/", is_verified:true, updated_at:new Date().toISOString()
+  },
+  {
+    id:"demo-4", name:"Smartphone Samsung Galaxy 5G 256GB", brand:"Samsung", category:"Celulares",
+    store:"Magazine Luiza", price:1699, old_price:1899, shipping_text:"Retirada grátis disponível",
+    installments:"10x de R$ 169,90", image_url:"https://placehold.co/600x450?text=Galaxy+5G",
+    affiliate_url:"https://www.magazineluiza.com.br/", is_verified:true, updated_at:new Date().toISOString()
+  }
 ];
 
-const demoData = {
-  products: [
-    {
-      id: crypto.randomUUID(),
-      name: "TV 55 polegadas com boa imagem",
-      category: "TV",
-      targetPrice: 2500,
-      keywords: ["QLED", "4K", "55 polegadas"],
-      brands: ["TCL", "Samsung", "LG"],
-      offers: [
-        {
-          store: "Amazon",
-          price: 2399,
-          shipping: 0,
-          url: "",
-          note: "Exemplo de oferta cadastrada manualmente",
-          checkedAt: new Date().toISOString()
-        }
-      ]
-    }
-  ]
-};
+const state = { products:[], query:"", category:"Todos" };
 
-let data = loadData();
-
-const productsGrid = document.querySelector("#productsGrid");
-const emptyState = document.querySelector("#emptyState");
-const searchInput = document.querySelector("#searchInput");
-const categoryFilter = document.querySelector("#categoryFilter");
-const statusFilter = document.querySelector("#statusFilter");
-const productModal = document.querySelector("#productModal");
-const offerModal = document.querySelector("#offerModal");
-
-function loadData() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : structuredClone(demoData);
-}
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function currency(value) {
-  return Number(value).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
-}
-
-function totalOffer(offer) {
-  return Number(offer.price || 0) + Number(offer.shipping || 0);
-}
-
-function bestOffer(product) {
-  if (!product.offers?.length) return null;
-  return [...product.offers].sort((a, b) => totalOffer(a) - totalOffer(b))[0];
-}
-
-function productStatus(product) {
-  const offer = bestOffer(product);
-  if (!offer) return "no-offer";
-  return totalOffer(offer) <= product.targetPrice ? "deal" : "above";
-}
-
-function renderCategories() {
-  const current = categoryFilter.value;
-  const categories = [...new Set(data.products.map(p => p.category).filter(Boolean))].sort();
-  categoryFilter.innerHTML = '<option value="">Todas</option>' +
-    categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-  categoryFilter.value = categories.includes(current) ? current : "";
-}
-
-function renderStores() {
-  document.querySelector("#storesList").innerHTML = verifiedStores
-    .map(store => `<div class="store-pill">✓ ${store}</div>`)
-    .join("");
-  document.querySelector("#storeCount").textContent = verifiedStores.length;
-
-  document.querySelector("#offerStore").innerHTML = verifiedStores
-    .map(store => `<option value="${store}">${store}</option>`)
-    .join("");
-}
-
-function renderSummary() {
-  document.querySelector("#trackedCount").textContent = data.products.length;
-  document.querySelector("#dealCount").textContent =
-    data.products.filter(p => productStatus(p) === "deal").length;
-}
-
-function renderProducts() {
-  const term = searchInput.value.trim().toLowerCase();
-  const category = categoryFilter.value;
-  const status = statusFilter.value;
-
-  const filtered = data.products.filter(product => {
-    const text = [
-      product.name,
-      product.category,
-      ...(product.keywords || []),
-      ...(product.brands || [])
-    ].join(" ").toLowerCase();
-
-    return (!term || text.includes(term)) &&
-      (!category || product.category === category) &&
-      (!status || productStatus(product) === status);
-  });
-
-  productsGrid.innerHTML = filtered.map(productCard).join("");
-  emptyState.classList.toggle("hidden", filtered.length > 0);
-
-  document.querySelectorAll("[data-add-offer]").forEach(button => {
-    button.addEventListener("click", () => openOfferModal(button.dataset.addOffer));
-  });
-
-  document.querySelectorAll("[data-delete-product]").forEach(button => {
-    button.addEventListener("click", () => deleteProduct(button.dataset.deleteProduct));
-  });
-}
-
-function productCard(product) {
-  const offer = bestOffer(product);
-  const status = productStatus(product);
-  const statusText = status === "deal"
-    ? "Dentro da meta"
-    : status === "above"
-      ? "Acima da meta"
-      : "Sem oferta";
-
-  const tags = [...(product.brands || []), ...(product.keywords || [])]
-    .slice(0, 7)
-    .map(tag => `<span class="tag">${escapeHtml(tag)}</span>`)
-    .join("");
-
-  let offerHtml = `
-    <div>
-      <span class="badge empty">Sem oferta cadastrada</span>
-      <div class="offer-details">Adicione um preço encontrado em uma loja verificada.</div>
-    </div>
-  `;
-
-  if (offer) {
-    const total = totalOffer(offer);
-    offerHtml = `
-      <div>
-        <span class="badge ${status}">${statusText}</span>
-        <div class="offer-price">${currency(total)}</div>
-        <div class="offer-details">
-          ${escapeHtml(offer.store)}
-          ${offer.shipping ? ` • frete ${currency(offer.shipping)}` : " • frete grátis"}
-          ${offer.note ? ` • ${escapeHtml(offer.note)}` : ""}
-        </div>
-      </div>
-      ${offer.url ? `<a class="secondary-btn" href="${escapeAttribute(offer.url)}" target="_blank" rel="noopener">Ver oferta</a>` : ""}
-    `;
+async function loadProducts(){
+  $("loading").classList.remove("hidden");
+  try{
+    if(!db) throw new Error("Supabase não configurado");
+    const {data,error} = await db
+      .from("offers_public")
+      .select("*")
+      .eq("active",true)
+      .order("price",{ascending:true})
+      .limit(500);
+    if(error) throw error;
+    state.products = data && data.length ? data : demoProducts;
+  }catch(error){
+    console.warn("Usando produtos demonstrativos:", error.message);
+    state.products = demoProducts;
   }
-
-  return `
-    <article class="product-card">
-      <div class="product-top">
-        <div>
-          <p class="eyebrow">${escapeHtml(product.category || "PRODUTO")}</p>
-          <h3>${escapeHtml(product.name)}</h3>
-          <div class="product-meta">
-            Marcas: ${escapeHtml((product.brands || []).join(", ") || "qualquer")}
-          </div>
-        </div>
-        <div class="price-target">
-          <span>Preço máximo</span>
-          <strong>${currency(product.targetPrice)}</strong>
-        </div>
-      </div>
-
-      <div class="tags">${tags || '<span class="tag">Sem filtros extras</span>'}</div>
-      <div class="offer-box">${offerHtml}</div>
-
-      <div class="card-actions">
-        <button class="primary-btn" data-add-offer="${product.id}">Atualizar preço</button>
-        <button class="danger-btn" data-delete-product="${product.id}">Excluir</button>
-      </div>
-    </article>
-  `;
+  $("loading").classList.add("hidden");
+  refreshFilterOptions();
+  render();
 }
 
-function openOfferModal(productId) {
-  const product = data.products.find(p => p.id === productId);
-  if (!product) return;
-  document.querySelector("#offerProductId").value = productId;
-  document.querySelector("#offerModalTitle").textContent = `Oferta para ${product.name}`;
-  document.querySelector("#offerPrice").value = "";
-  document.querySelector("#shippingPrice").value = "0";
-  document.querySelector("#offerUrl").value = "";
-  document.querySelector("#offerNote").value = "";
-  offerModal.showModal();
+function refreshFilterOptions(){
+  const stores = [...new Set(state.products.map(p=>p.store).filter(Boolean))].sort();
+  const brands = [...new Set(state.products.map(p=>p.brand).filter(Boolean))].sort();
+  $("storeFilter").innerHTML = '<option value="">Todas</option>' + stores.map(x=>`<option>${escapeHtml(x)}</option>`).join("");
+  $("brandFilter").innerHTML = '<option value="">Todas</option>' + brands.map(x=>`<option>${escapeHtml(x)}</option>`).join("");
 }
 
-function deleteProduct(productId) {
-  const product = data.products.find(p => p.id === productId);
-  if (!product) return;
-  if (!confirm(`Excluir o acompanhamento de "${product.name}"?`)) return;
-  data.products = data.products.filter(p => p.id !== productId);
-  saveData();
-  renderAll();
-}
+function filteredProducts(){
+  const query = normalize(state.query);
+  const store = $("storeFilter").value;
+  const brand = $("brandFilter").value;
+  const maxPrice = Number($("maxPrice").value || 0);
+  const sort = $("sortFilter").value;
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function escapeAttribute(value = "") {
-  return escapeHtml(value);
-}
-
-document.querySelector("#openProductModal").addEventListener("click", () => productModal.showModal());
-document.querySelector("#closeProductModal").addEventListener("click", () => productModal.close());
-document.querySelector("#cancelProduct").addEventListener("click", () => productModal.close());
-document.querySelector("#closeOfferModal").addEventListener("click", () => offerModal.close());
-document.querySelector("#cancelOffer").addEventListener("click", () => offerModal.close());
-
-document.querySelector("#productForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const name = document.querySelector("#productName").value.trim();
-  const category = document.querySelector("#productCategory").value.trim();
-  const targetPrice = Number(document.querySelector("#targetPrice").value);
-  const keywords = document.querySelector("#keywords").value
-    .split(",").map(v => v.trim()).filter(Boolean);
-  const brands = document.querySelector("#brands").value
-    .split(",").map(v => v.trim()).filter(Boolean);
-
-  data.products.unshift({
-    id: crypto.randomUUID(),
-    name,
-    category,
-    targetPrice,
-    keywords,
-    brands,
-    offers: []
+  let result = state.products.filter(p=>{
+    const haystack = normalize([p.name,p.brand,p.category,p.store,p.keywords].join(" "));
+    return (!query || haystack.includes(query))
+      && (state.category === "Todos" || p.category === state.category)
+      && (!store || p.store === store)
+      && (!brand || p.brand === brand)
+      && (!maxPrice || Number(p.price) <= maxPrice);
   });
 
-  saveData();
-  event.target.reset();
-  productModal.close();
-  renderAll();
-});
-
-document.querySelector("#offerForm").addEventListener("submit", event => {
-  event.preventDefault();
-
-  const productId = document.querySelector("#offerProductId").value;
-  const product = data.products.find(p => p.id === productId);
-  if (!product) return;
-
-  product.offers = product.offers || [];
-  product.offers.push({
-    store: document.querySelector("#offerStore").value,
-    price: Number(document.querySelector("#offerPrice").value),
-    shipping: Number(document.querySelector("#shippingPrice").value || 0),
-    url: document.querySelector("#offerUrl").value.trim(),
-    note: document.querySelector("#offerNote").value.trim(),
-    checkedAt: new Date().toISOString()
+  result.sort((a,b)=>{
+    if(sort==="price_desc") return Number(b.price)-Number(a.price);
+    if(sort==="recent") return new Date(b.updated_at)-new Date(a.updated_at);
+    return Number(a.price)-Number(b.price);
   });
-
-  saveData();
-  offerModal.close();
-  renderAll();
-});
-
-[searchInput, categoryFilter, statusFilter].forEach(input => {
-  input.addEventListener("input", renderProducts);
-  input.addEventListener("change", renderProducts);
-});
-
-document.querySelector("#resetDemo").addEventListener("click", () => {
-  if (!confirm("Restaurar os dados de exemplo? Seus dados atuais serão substituídos.")) return;
-  data = structuredClone(demoData);
-  saveData();
-  renderAll();
-});
-
-function renderAll() {
-  renderStores();
-  renderCategories();
-  renderSummary();
-  renderProducts();
+  return result;
 }
 
-renderAll();
+function render(){
+  const products = filteredProducts();
+  $("productGrid").innerHTML = "";
+  $("empty").classList.toggle("hidden", products.length > 0);
+  $("resultCount").textContent = `${products.length} oferta${products.length===1?"":"s"} encontrada${products.length===1?"":"s"}`;
+  $("resultsTitle").textContent = state.query ? `Resultados para “${state.query}”` : state.category==="Todos" ? "Melhores ofertas" : state.category;
+
+  const template = $("productTemplate");
+  products.forEach(p=>{
+    const node = template.content.cloneNode(true);
+    const image = node.querySelector(".product-image");
+    image.src = p.image_url || "https://placehold.co/600x450?text=Produto";
+    image.alt = p.name || "Produto";
+    image.onerror = () => image.src = "https://placehold.co/600x450?text=Produto";
+
+    node.querySelector(".store-name").textContent = p.store || "Loja";
+    node.querySelector(".verified").classList.toggle("hidden", !p.is_verified);
+    node.querySelector(".product-name").textContent = p.name || "Produto";
+    node.querySelector(".product-brand").textContent = [p.brand,p.category].filter(Boolean).join(" • ");
+    node.querySelector(".old-price").textContent = p.old_price && Number(p.old_price)>Number(p.price) ? money(p.old_price) : "";
+    node.querySelector(".price").textContent = money(p.price);
+    node.querySelector(".installments").textContent = p.installments || "";
+    node.querySelector(".shipping").textContent = p.shipping_text || "Consulte o frete na loja";
+    node.querySelector(".updated").textContent = `Atualizado em ${new Date(p.updated_at || Date.now()).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})}`;
+
+    const badge = node.querySelector(".deal-badge");
+    if(p.old_price && Number(p.old_price)>Number(p.price)){
+      const discount = Math.round((1-Number(p.price)/Number(p.old_price))*100);
+      badge.textContent = `${discount}% OFF`;
+      badge.classList.remove("hidden");
+    }
+
+    const buy = node.querySelector(".buy-button");
+    buy.href = p.affiliate_url || p.product_url || "#";
+    buy.dataset.offerId = p.id || "";
+    buy.addEventListener("click",()=>registerClick(p));
+    $("productGrid").appendChild(node);
+  });
+}
+
+async function registerClick(product){
+  if(!db || !product.id || String(product.id).startsWith("demo-")) return;
+  try{
+    await db.from("affiliate_clicks").insert({
+      offer_id:product.id,
+      store:product.store || null,
+      referrer:document.referrer || null,
+      user_agent:navigator.userAgent
+    });
+  }catch(error){
+    console.warn("Clique não registrado:",error.message);
+  }
+}
+
+function runSearch(value){
+  state.query = value.trim();
+  $("searchInput").value = state.query;
+  $("suggestions").classList.add("hidden");
+  render();
+  document.querySelector("#ofertas").scrollIntoView({behavior:"smooth"});
+}
+
+function showSuggestions(){
+  const value = normalize($("searchInput").value);
+  if(value.length < 2){
+    $("suggestions").classList.add("hidden");
+    return;
+  }
+  const matches = [...new Set(state.products
+    .filter(p=>normalize([p.name,p.brand,p.category].join(" ")).includes(value))
+    .flatMap(p=>[p.name,p.brand,p.category])
+    .filter(Boolean))]
+    .slice(0,6);
+  $("suggestions").innerHTML = matches.map(x=>`<button type="button" data-value="${escapeAttr(x)}">${escapeHtml(x)}</button>`).join("");
+  $("suggestions").classList.toggle("hidden", matches.length===0);
+  $("suggestions").querySelectorAll("button").forEach(b=>b.onclick=()=>runSearch(b.dataset.value));
+}
+
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function escapeAttr(v){return escapeHtml(v);}
+
+$("searchForm").addEventListener("submit",e=>{e.preventDefault();runSearch($("searchInput").value)});
+$("searchInput").addEventListener("input",showSuggestions);
+document.querySelectorAll("[data-search]").forEach(b=>b.onclick=()=>runSearch(b.dataset.search));
+document.querySelectorAll(".category").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".category").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  state.category=b.dataset.category;
+  state.query="";
+  $("searchInput").value="";
+  render();
+});
+["storeFilter","brandFilter","maxPrice","sortFilter"].forEach(id=>$(id).addEventListener("input",render));
+
+loadProducts();
