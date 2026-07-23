@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preço Certo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MONITOR DE PROMOÇÕES</p>
+      <h1>Preço Certo</h1>
+      <p class="subtitle">Acompanhe produtos e encontre ofertas apenas em lojas verificadas.</p>
+    </div>
+    <button id="openProductModal" class="primary-btn">+ Adicionar produto</button>
+  </header>
+
+  <main>
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Produtos acompanhados</span>
+        <strong id="trackedCount">0</strong>
+      </article>
+      <article class="summary-card">
+        <span>Ofertas dentro da meta</span>
+        <strong id="dealCount">0</strong>
+      </article>
+      <article class="summary-card">
+        <span>Lojas verificadas</span>
+        <strong id="storeCount">0</strong>
+      </article>
+    </section>
+
+    <section class="panel filters-panel">
+      <div>
+        <label for="searchInput">Pesquisar</label>
+        <input id="searchInput" type="search" placeholder="Produto, marca ou modelo" />
+      </div>
+      <div>
+        <label for="categoryFilter">Categoria</label>
+        <select id="categoryFilter">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <label for="statusFilter">Situação</label>
+        <select id="statusFilter">
+          <option value="">Todas</option>
+          <option value="deal">Dentro da meta</option>
+          <option value="above">Acima da meta</option>
+          <option value="no-offer">Sem oferta</option>
+        </select>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SEUS PRODUTOS</p>
+          <h2>Lista de acompanhamento</h2>
+        </div>
+        <button id="resetDemo" class="ghost-btn">Restaurar exemplo</button>
+      </div>
+      <div id="productsGrid" class="products-grid"></div>
+      <div id="emptyState" class="empty-state hidden">
+        <h3>Nenhum produto encontrado</h3>
+        <p>Adicione um produto ou altere os filtros.</p>
+      </div>
+    </section>
+
+    <section class="panel stores-panel">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">SEGURANÇA</p>
+          <h2>Lojas verificadas</h2>
+        </div>
+      </div>
+      <div id="storesList" class="stores-list"></div>
+      <p class="small-note">Nesta versão, somente ofertas vinculadas a estas lojas aparecem como verificadas.</p>
+    </section>
+  </main>
+
+  <dialog id="productModal">
+    <form id="productForm" method="dialog">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">NOVO MONITORAMENTO</p>
+          <h2>Adicionar produto</h2>
+        </div>
+        <button type="button" id="closeProductModal" class="icon-btn" aria-label="Fechar">×</button>
+      </div>
+
+      <label>Nome do produto
+        <input id="productName" required placeholder="Ex.: TV TCL 55 T6C" />
+      </label>
+
+      <div class="form-row">
+        <label>Categoria
+          <input id="productCategory" required placeholder="Ex.: TV" />
+        </label>
+        <label>Preço máximo
+          <input id="targetPrice" required type="number" min="1" step="0.01" placeholder="2500" />
+        </label>
+      </div>
+
+      <label>Palavras-chave
+        <input id="keywords" placeholder="Ex.: QLED, 55 polegadas, Google TV" />
+      </label>
+
+      <label>Marcas aceitas
+        <input id="brands" placeholder="Ex.: TCL, Samsung, LG" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelProduct" class="ghost-btn">Cancelar</button>
+        <button type="submit" class="primary-btn">Salvar produto</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="offerModal">
+    <form id="offerForm" method="dialog">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">ATUALIZAR PREÇO</p>
+          <h2 id="offerModalTitle">Adicionar oferta</h2>
+        </div>
+        <button type="button" id="closeOfferModal" class="icon-btn" aria-label="Fechar">×</button>
+      </div>
+
+      <input id="offerProductId" type="hidden" />
+
+      <label>Loja
+        <select id="offerStore" required></select>
+      </label>
+
+      <div class="form-row">
+        <label>Preço encontrado
+          <input id="offerPrice" required type="number" min="1" step="0.01" />
+        </label>
+        <label>Frete
+          <input id="shippingPrice" type="number" min="0" step="0.01" value="0" />
+        </label>
+      </div>
+
+      <label>Link da oferta
+        <input id="offerUrl" type="url" placeholder="https://..." />
+      </label>
+
+      <label>Observação
+        <input id="offerNote" placeholder="Ex.: cupom aplicado, vendido pela loja oficial" />
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelOffer" class="ghost-btn">Cancelar</button>
+        <button type="submit" class="primary-btn">Salvar oferta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
