@@ -1,34 +1,55 @@
-# Preço Certo
+# Custo Certo v2
 
-Site simples para acompanhar promoções de produtos em lojas verificadas.
-
-## Como abrir
-
-1. Extraia o arquivo ZIP.
-2. Abra o arquivo `index.html` no navegador.
-3. Os produtos cadastrados ficam salvos no próprio navegador usando `localStorage`.
+Site público de comparação de ofertas com busca geral e links diretos de compra.
 
 ## O que já funciona
 
-- Adicionar produtos.
-- Definir preço máximo.
-- Informar marcas e palavras-chave.
-- Registrar preços encontrados em lojas verificadas.
-- Filtrar por produto, categoria e situação.
-- Identificar automaticamente quando uma oferta está dentro da meta.
-- Adicionar outros produtos quando quiser.
-- Layout responsivo para celular e computador.
+- Pesquisa de qualquer produto cadastrado
+- Sugestões conforme nome, marca e categoria
+- Categorias e filtros
+- Ordenação por preço
+- Links diretos de compra
+- Compatibilidade com links de afiliado
+- Registro de cliques no Supabase
+- Layout responsivo para celular
+- Produtos demonstrativos quando o banco estiver vazio
 
-## Limitação desta versão
+## Instalação no Supabase
 
-A consulta de preços ainda é manual. Para buscar preços reais automaticamente, é necessário publicar o site com um backend e integrar APIs oficiais, feeds de afiliados ou um serviço autorizado de comparação de preços.
+1. Abra o projeto do Supabase.
+2. Entre em **SQL Editor**.
+3. Clique em **New query**.
+4. Cole o conteúdo de `supabase_setup.sql`.
+5. Clique em **Run**.
+6. Vá em **Table Editor → offers**.
+7. Edite ou adicione produtos.
+8. No campo `affiliate_url`, coloque seu link de afiliado daquele produto.
 
-Evite fazer scraping direto de lojas sem conferir os termos de uso. APIs oficiais ou programas de afiliados são a opção mais segura.
+## Como usar seus links de afiliado
 
-## Próximo passo técnico sugerido
+### Mercado Livre
 
-- Frontend: esta interface ou React/Next.js.
-- Banco de dados: Supabase ou Firebase.
-- Backend: funções agendadas para consultar APIs.
-- Login: conta administrativa.
-- Alertas: e-mail, WhatsApp ou Telegram.
+Gere o link no Portal do Afiliado. Cadastre o site Custo Certo entre seus canais permitidos. Depois copie o link gerado e cole em `affiliate_url`.
+
+### Shopee
+
+Use **Plataforma de Afiliados → Conta → Link de Conversão**. Converta o link do produto e cole o resultado em `affiliate_url`.
+
+O site abre `affiliate_url` primeiro. O campo `product_url` fica como referência do link normal.
+
+## Publicar no GitHub Pages
+
+Substitua os arquivos atuais do repositório pelos arquivos desta pasta:
+
+- `index.html`
+- `styles.css`
+- `app.js`
+- `config.js`
+
+O arquivo SQL não precisa ser enviado ao GitHub, mas pode ficar no repositório para documentação.
+
+## Atenção
+
+A versão atual pesquisa os produtos que você cadastrou na tabela `offers`. Para importar preços automaticamente e atualizar milhares de produtos, será necessária uma integração autorizada com APIs, feeds de afiliados ou uma Edge Function no Supabase.
+
+Não coloque secret key ou service_role no GitHub. A chave publishable presente em `config.js` é destinada ao navegador.
