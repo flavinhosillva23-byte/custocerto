@@ -1,152 +1,280 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="classic">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0f766e">
-  <meta name="description" content="Encontre ofertas e compare preços em lojas confiáveis.">
-  <title>Custo Certo — Compare preços e encontre ofertas</title>
+  <meta name="description" content="Compare preços e encontre ofertas em lojas confiáveis.">
+  <title>Custo Certo — Ofertas e comparação de preços</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="config.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="logo" href="#" aria-label="Página inicial">
-      <span class="logo-mark">C</span>
-      <span>Custo Certo</span>
-    </a>
-    <nav>
-      <a href="#ofertas">Ofertas</a>
-      <a href="#como-funciona">Como funciona</a>
+  <div class="announcement">
+    <span>Ofertas atualizadas</span>
+    <strong>Compare preços antes de comprar</strong>
+    <button id="themeButton" type="button" aria-label="Trocar visual">Trocar visual</button>
+  </div>
+
+  <header class="site-header">
+    <div class="header-main container">
+      <a class="brand" href="#" aria-label="Início">
+        <span class="brand-icon">C</span>
+        <span>
+          <strong>Custo Certo</strong>
+          <small>Compare. Economize. Compre.</small>
+        </span>
+      </a>
+
+      <form id="mainSearch" class="main-search">
+        <select id="searchCategory" aria-label="Categoria">
+          <option value="">Todas</option>
+        </select>
+        <input id="searchInput" type="search" placeholder="Busque por produto, marca ou modelo" autocomplete="off">
+        <button type="submit">Buscar</button>
+        <div id="searchSuggestions" class="search-suggestions hidden"></div>
+      </form>
+
+      <div class="header-actions">
+        <button id="favoritesButton" class="icon-action" type="button">
+          <span>♡</span>
+          <small>Favoritos</small>
+          <b id="favoriteCount">0</b>
+        </button>
+        <button id="recentButton" class="icon-action" type="button">
+          <span>↻</span>
+          <small>Vistos</small>
+          <b id="recentCount">0</b>
+        </button>
+      </div>
+    </div>
+
+    <nav class="category-nav">
+      <div id="categoryNav" class="container nav-scroll"></div>
     </nav>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="hero-content">
-        <span class="eyebrow">Compare antes de comprar</span>
-        <h1>Encontre o produto certo pelo menor preço</h1>
-        <p>Pesquise TVs, celulares, notebooks, eletrodomésticos e qualquer outro produto. Os resultados levam direto para a loja.</p>
-
-        <form id="searchForm" class="search-box">
-          <input id="searchInput" type="search" placeholder="O que você está procurando?" autocomplete="off">
-          <button type="submit">Pesquisar</button>
-        </form>
-
-        <div id="suggestions" class="suggestions hidden"></div>
-
-        <div class="popular">
-          <span>Buscas populares:</span>
-          <button data-search="TV 55 polegadas">TV 55"</button>
-          <button data-search="Notebook">Notebook</button>
-          <button data-search="Celular">Celular</button>
-          <button data-search="Geladeira">Geladeira</button>
-          <button data-search="Ar condicionado">Ar condicionado</button>
+    <section class="hero container">
+      <div class="hero-copy">
+        <span class="pill">COMPARADOR DE PREÇOS</span>
+        <h1>As melhores ofertas em um só lugar</h1>
+        <p>Pesquise qualquer produto, compare lojas confiáveis e vá direto para a página de compra.</p>
+        <div class="hero-actions">
+          <button class="primary-button" data-scroll-products>Ver ofertas</button>
+          <button class="secondary-button" data-category-go="TV e Vídeo">Explorar TVs</button>
+        </div>
+        <div class="trust-list">
+          <span>✓ Links diretos</span>
+          <span>✓ Lojas verificadas</span>
+          <span>✓ Preços comparados</span>
+        </div>
+      </div>
+      <div class="hero-card">
+        <span class="hero-badge">OFERTA DO DIA</span>
+        <img src="assets/tv.svg" alt="TV em oferta">
+        <div>
+          <small>Smart TV 55" QLED</small>
+          <strong>até 28% OFF</strong>
+          <button data-search="TV 55 QLED">Conferir ofertas</button>
         </div>
       </div>
     </section>
 
-    <section class="categories" aria-label="Categorias">
-      <button class="category active" data-category="Todos">Todos</button>
-      <button class="category" data-category="TV e Vídeo">TV e Vídeo</button>
-      <button class="category" data-category="Celulares">Celulares</button>
-      <button class="category" data-category="Notebooks">Notebooks</button>
-      <button class="category" data-category="Eletrodomésticos">Eletrodomésticos</button>
-      <button class="category" data-category="Casa e Cozinha">Casa e Cozinha</button>
-      <button class="category" data-category="Outros">Outros</button>
+    <section class="container section-block">
+      <div class="section-title">
+        <div>
+          <span>COMPRE POR CATEGORIA</span>
+          <h2>O que você está procurando?</h2>
+        </div>
+      </div>
+      <div id="categoryCards" class="category-grid"></div>
     </section>
 
-    <section id="ofertas" class="results-section">
-      <div class="section-head">
-        <div>
-          <span class="eyebrow">Ofertas encontradas</span>
-          <h2 id="resultsTitle">Melhores ofertas</h2>
-          <p id="resultCount" class="muted">Carregando produtos...</p>
+    <section class="benefits-strip">
+      <div class="container benefit-grid">
+        <article><span>🏷️</span><div><strong>Menores preços</strong><small>Compare antes de comprar</small></div></article>
+        <article><span>🛍️</span><div><strong>Lojas confiáveis</strong><small>Links de compra verificados</small></div></article>
+        <article><span>⚡</span><div><strong>Ofertas rápidas</strong><small>Resultados organizados</small></div></article>
+        <article><span>🔔</span><div><strong>Alerta de preço</strong><small>Estrutura pronta para ativar</small></div></article>
+      </div>
+    </section>
+
+    <section id="productsSection" class="container products-layout section-block">
+      <aside class="filters-panel">
+        <div class="filter-head">
+          <h3>Filtros</h3>
+          <button id="clearFilters" type="button">Limpar</button>
         </div>
 
-        <div class="filters">
-          <label>
-            Loja
-            <select id="storeFilter">
-              <option value="">Todas</option>
-            </select>
-          </label>
-          <label>
-            Marca
-            <select id="brandFilter">
-              <option value="">Todas</option>
-            </select>
-          </label>
-          <label>
-            Preço máximo
-            <input id="maxPrice" type="number" min="0" step="50" placeholder="R$">
-          </label>
-          <label>
-            Ordenar
-            <select id="sortFilter">
-              <option value="price_asc">Menor preço</option>
-              <option value="price_desc">Maior preço</option>
+        <label class="filter-field">
+          Categoria
+          <select id="categoryFilter"></select>
+        </label>
+
+        <div class="filter-group">
+          <span>Marcas</span>
+          <div id="brandChecks" class="check-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <span>Lojas</span>
+          <div id="storeChecks" class="check-list"></div>
+        </div>
+
+        <div class="filter-group">
+          <span>Faixa de preço</span>
+          <div class="price-row">
+            <input id="minPrice" type="number" min="0" placeholder="Mínimo">
+            <input id="maxPrice" type="number" min="0" placeholder="Máximo">
+          </div>
+        </div>
+
+        <label class="toggle-row">
+          <input id="freeShippingOnly" type="checkbox">
+          <span>Frete grátis</span>
+        </label>
+
+        <label class="toggle-row">
+          <input id="discountOnly" type="checkbox">
+          <span>Somente com desconto</span>
+        </label>
+      </aside>
+
+      <div class="products-content">
+        <div class="products-toolbar">
+          <div>
+            <span class="eyebrow">OFERTAS ENCONTRADAS</span>
+            <h2 id="productsTitle">Produtos em destaque</h2>
+            <p id="productsCount">Carregando ofertas...</p>
+          </div>
+          <div class="toolbar-actions">
+            <select id="sortSelect" aria-label="Ordenação">
+              <option value="featured">Mais relevantes</option>
+              <option value="priceAsc">Menor preço</option>
+              <option value="priceDesc">Maior preço</option>
+              <option value="discount">Maior desconto</option>
               <option value="recent">Mais recentes</option>
             </select>
-          </label>
+            <button id="gridToggle" type="button">▦</button>
+          </div>
         </div>
-      </div>
 
-      <div id="loading" class="status">Buscando ofertas...</div>
-      <div id="empty" class="status hidden">
-        <strong>Nenhuma oferta encontrada.</strong>
-        <span>Tente outro produto, marca ou faixa de preço.</span>
+        <div id="activeFilters" class="active-filters"></div>
+        <div id="loadingState" class="state-card">Carregando produtos...</div>
+        <div id="emptyState" class="state-card hidden">
+          <strong>Nenhum produto encontrado</strong>
+          <span>Tente remover alguns filtros ou pesquisar outro termo.</span>
+        </div>
+        <div id="productGrid" class="product-grid"></div>
+        <button id="loadMoreButton" class="load-more hidden" type="button">Mostrar mais produtos</button>
       </div>
-      <div id="productGrid" class="product-grid"></div>
     </section>
 
-    <section id="como-funciona" class="info-section">
-      <article>
-        <span>1</span>
-        <h3>Pesquise</h3>
-        <p>Digite qualquer produto ou escolha uma categoria.</p>
+    <section class="container promo-banners section-block">
+      <article class="promo one">
+        <span>CASA E COZINHA</span>
+        <h3>Ofertas para renovar sua casa</h3>
+        <button data-category-go="Casa e Cozinha">Ver produtos</button>
       </article>
-      <article>
-        <span>2</span>
-        <h3>Compare</h3>
-        <p>Veja preço, loja, frete, marca e atualização da oferta.</p>
+      <article class="promo two">
+        <span>TECNOLOGIA</span>
+        <h3>Eletrônicos com preços especiais</h3>
+        <button data-category-go="Notebooks">Conferir</button>
       </article>
-      <article>
-        <span>3</span>
-        <h3>Compre na loja</h3>
-        <p>O botão abre diretamente o link da oferta, inclusive links de afiliado.</p>
-      </article>
+    </section>
+
+    <section class="container section-block">
+      <div class="section-title">
+        <div>
+          <span>LOJAS PARCEIRAS</span>
+          <h2>Onde você pode comprar</h2>
+        </div>
+      </div>
+      <div id="storeLogos" class="store-grid"></div>
+    </section>
+
+    <section class="newsletter">
+      <div class="container newsletter-inner">
+        <div>
+          <span>ALERTAS DE PREÇO</span>
+          <h2>Receba as melhores ofertas</h2>
+          <p>Esta seção já está pronta para conectar a e-mail ou WhatsApp futuramente.</p>
+        </div>
+        <form id="newsletterForm">
+          <input type="email" placeholder="Seu melhor e-mail" required>
+          <button type="submit">Quero receber</button>
+        </form>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <strong>Custo Certo</strong>
-    <p>Os preços podem mudar sem aviso. Confirme o valor e as condições no site da loja antes da compra.</p>
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="#">
+          <span class="brand-icon">C</span>
+          <span><strong>Custo Certo</strong><small>Compare. Economize. Compre.</small></span>
+        </a>
+        <p>Um catálogo de ofertas com links diretos para lojas e marketplaces.</p>
+      </div>
+      <div>
+        <strong>Atalhos</strong>
+        <a href="#productsSection">Ofertas</a>
+        <a href="#">Categorias</a>
+        <a href="#">Lojas</a>
+      </div>
+      <div>
+        <strong>Informações</strong>
+        <a href="#">Como funciona</a>
+        <a href="#">Política de privacidade</a>
+        <a href="#">Divulgação de afiliados</a>
+      </div>
+      <div>
+        <strong>Aviso</strong>
+        <p>Os preços e condições podem mudar. Confirme as informações no site da loja.</p>
+      </div>
+    </div>
   </footer>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="sideDrawer" class="side-drawer">
+    <div class="drawer-head">
+      <h3 id="drawerTitle">Favoritos</h3>
+      <button id="closeDrawer" type="button">×</button>
+    </div>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <div id="toast" class="toast hidden"></div>
 
   <template id="productTemplate">
     <article class="product-card">
-      <div class="image-wrap">
+      <div class="product-image-wrap">
         <img class="product-image" alt="">
-        <span class="deal-badge hidden"></span>
+        <span class="discount-badge hidden"></span>
+        <button class="favorite-button" type="button" aria-label="Favoritar">♡</button>
       </div>
-      <div class="product-body">
-        <div class="product-meta">
+      <div class="product-info">
+        <div class="product-topline">
           <span class="store-name"></span>
-          <span class="verified">Loja verificada</span>
+          <span class="verified-badge">✓ verificada</span>
         </div>
         <h3 class="product-name"></h3>
-        <p class="product-brand"></p>
-        <div class="price-block">
+        <p class="product-meta"></p>
+        <div class="rating"><span>★★★★★</span><small class="rating-count"></small></div>
+        <div class="price-area">
           <span class="old-price"></span>
-          <strong class="price"></strong>
-          <span class="installments"></span>
+          <strong class="current-price"></strong>
+          <small class="installments"></small>
         </div>
         <p class="shipping"></p>
-        <p class="updated"></p>
-        <a class="buy-button" target="_blank" rel="nofollow sponsored noopener">Ver oferta</a>
+        <div class="product-actions">
+          <button class="details-button" type="button">Detalhes</button>
+          <a class="buy-button" target="_blank" rel="nofollow sponsored noopener">Ver oferta</a>
+        </div>
       </div>
     </article>
   </template>

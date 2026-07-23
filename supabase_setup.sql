@@ -1,6 +1,3 @@
--- CUSTO CERTO — ESTRUTURA DO SUPABASE
--- Cole tudo no SQL Editor do Supabase e clique em Run.
-
 create extension if not exists pgcrypto;
 
 create table if not exists public.offers (
@@ -16,7 +13,8 @@ create table if not exists public.offers (
   image_url text,
   product_url text,
   affiliate_url text not null,
-  keywords text,
+  rating numeric(2,1) default 4.7,
+  reviews integer default 0,
   is_verified boolean not null default true,
   active boolean not null default true,
   updated_at timestamptz not null default now(),
@@ -33,37 +31,21 @@ create table if not exists public.affiliate_clicks (
 );
 
 create or replace view public.offers_public as
-select
-  id,name,brand,category,store,price,old_price,shipping_text,installments,
-  image_url,product_url,affiliate_url,keywords,is_verified,active,updated_at
-from public.offers
-where active = true;
+select id,name,brand,category,store,price,old_price,shipping_text,installments,
+image_url,product_url,affiliate_url,rating,reviews,is_verified,active,updated_at
+from public.offers where active=true;
 
 alter table public.offers enable row level security;
 alter table public.affiliate_clicks enable row level security;
 
 drop policy if exists "Leitura pública de ofertas" on public.offers;
-create policy "Leitura pública de ofertas"
-on public.offers for select
-to anon, authenticated
-using (active = true);
+create policy "Leitura pública de ofertas" on public.offers
+for select to anon, authenticated using (active=true);
 
 drop policy if exists "Registrar cliques públicos" on public.affiliate_clicks;
-create policy "Registrar cliques públicos"
-on public.affiliate_clicks for insert
-to anon, authenticated
-with check (true);
+create policy "Registrar cliques públicos" on public.affiliate_clicks
+for insert to anon, authenticated with check (true);
 
 grant select on public.offers_public to anon, authenticated;
 grant insert on public.affiliate_clicks to anon, authenticated;
 grant usage, select on sequence public.affiliate_clicks_id_seq to anon, authenticated;
-
--- PRODUTOS DE EXEMPLO
--- Troque affiliate_url pelos seus links gerados nos portais de afiliados.
-insert into public.offers
-(name,brand,category,store,price,old_price,shipping_text,installments,image_url,product_url,affiliate_url,keywords)
-values
-('Smart TV TCL 55 polegadas QLED 4K Google TV','TCL','TV e Vídeo','Mercado Livre',2399,2699,'Frete grátis','10x sem juros','https://placehold.co/600x450?text=TV+TCL+55','https://www.mercadolivre.com.br/','https://www.mercadolivre.com.br/','tv televisão smart qled 55 4k'),
-('Smart TV LG 55 polegadas 4K webOS','LG','TV e Vídeo','Shopee',2499,2799,'Consulte o frete','12x disponíveis','https://placehold.co/600x450?text=TV+LG+55','https://shopee.com.br/','https://shopee.com.br/','tv televisão smart led 55 4k'),
-('Notebook Acer Aspire 5 16GB 512GB SSD','Acer','Notebooks','Amazon',3299,3599,'Frete grátis com Prime','10x sem juros','https://placehold.co/600x450?text=Notebook+Acer','https://www.amazon.com.br/','https://www.amazon.com.br/','notebook computador acer 16gb ssd'),
-('Smartphone Samsung Galaxy 5G 256GB','Samsung','Celulares','Magazine Luiza',1699,1899,'Retirada grátis disponível','10x sem juros','https://placehold.co/600x450?text=Galaxy+5G','https://www.magazineluiza.com.br/','https://www.magazineluiza.com.br/','celular smartphone samsung galaxy 5g');
