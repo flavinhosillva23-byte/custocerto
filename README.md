@@ -1,28 +1,44 @@
-# Custo Certo v5 estável
+# Custo Certo 2.0
 
-Esta versão corrige os dois problemas principais:
+Projeto completo e estático, pronto para GitHub Pages.
 
-1. As imagens não dependem mais da pasta assets. Cada categoria possui uma imagem interna de reserva.
-2. Produtos demonstrativos nunca abrem a página inicial da loja. Eles abrem uma busca específica pelo produto.
-3. Ofertas reais usam o campo affiliate_url ou product_url exato.
-4. A busca aceita qualquer texto e inclui móveis, colchões, ferramentas, automotivo, beleza, bebê, esportes e outros.
-5. Inclui admin.html para cadastrar ofertas reais.
+## Recursos incluídos
 
-## Publicar
+- Busca ampla com sugestões
+- Categorias
+- Filtros e ordenação
+- Produtos em destaque
+- Imagens locais
+- Links específicos de busca/produto
+- Favoritos
+- Vistos recentemente
+- Cupons por loja e botão copiar
+- Ofertas relâmpago com contador
+- Detalhes do produto
+- Histórico visual de preços
+- Comparação de até 3 produtos
+- Tema claro/escuro
+- Layout responsivo
+- Painel administrativo visual
+- Estrutura SQL para Supabase
 
-Envie para a raiz do GitHub:
+## Publicação
 
-index.html
-styles.css
-app.js
-config.js
-admin.html
-admin.js
+Envie todos os arquivos e pastas para a raiz do repositório GitHub Pages.
 
-Execute supabase_setup.sql no Supabase.
+Arquivos principais:
 
-## Limitação real
+- index.html
+- styles.css
+- app.js
+- data.json
+- admin.html
+- assets/
 
-Sem API, feed ou cadastro, o site não consegue inventar links exatos de produtos. Por isso, os itens de exemplo levam a uma busca específica na loja e aparecem marcados como Exemplo.
+Depois atualize com Ctrl + F5.
 
-Quando uma oferta real for cadastrada no Supabase, o botão muda para Ver produto e abre o link exato.
+## Importante
+
+Os produtos incluídos são dados demonstrativos. Os botões levam a buscas específicas nas lojas, não à página inicial. Para ter produto exato, preço ao vivo e imagem oficial, conecte APIs, feeds de afiliado ou cadastre a URL exata no Supabase.
+
+O arquivo supabase_setup.sql prepara as tabelas para ofertas, cupons, histórico e alertas.
