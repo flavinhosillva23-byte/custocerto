@@ -1,63 +1,28 @@
-# Custo Certo — Layout de loja virtual
+# Custo Certo v5 estável
 
-Esta versão foi refeita do zero. Ela funciona como uma vitrine de comércio eletrônico e comparação de preços.
+Esta versão corrige os dois problemas principais:
 
-## Principais recursos
+1. As imagens não dependem mais da pasta assets. Cada categoria possui uma imagem interna de reserva.
+2. Produtos demonstrativos nunca abrem a página inicial da loja. Eles abrem uma busca específica pelo produto.
+3. Ofertas reais usam o campo affiliate_url ou product_url exato.
+4. A busca aceita qualquer texto e inclui móveis, colchões, ferramentas, automotivo, beleza, bebê, esportes e outros.
+5. Inclui admin.html para cadastrar ofertas reais.
 
-- Layout completo de loja virtual
-- Três opções de visual no botão **Trocar visual**
-  - Clássico
-  - Marketplace
-  - Premium
-- Busca geral de produtos
-- Sugestões automáticas
-- Menu de categorias
-- Filtros de categoria, marca, loja, preço, frete e desconto
-- Ordenação
-- Favoritos
-- Vistos recentemente
-- Grade e lista
-- Links diretos de compra
-- Compatibilidade com links de afiliado
-- Integração com Supabase
-- Catálogo demonstrativo com 20 produtos
-- Layout adaptado para celular
+## Publicar
 
-## Publicação no GitHub Pages
+Envie para a raiz do GitHub:
 
-1. Extraia o ZIP.
-2. Abra o repositório `custocerto`.
-3. Use **Add file → Upload files**.
-4. Envie tudo, inclusive a pasta `assets`.
-5. Marque para substituir os arquivos com o mesmo nome.
-6. Clique em **Commit changes**.
-7. Aguarde alguns minutos.
-8. Abra o site e pressione `Ctrl + F5`.
+index.html
+styles.css
+app.js
+config.js
+admin.html
+admin.js
 
-## Supabase
+Execute supabase_setup.sql no Supabase.
 
-No Supabase, abra **SQL Editor**, cole `supabase_setup.sql` e execute.
+## Limitação real
 
-Enquanto a tabela estiver vazia, o site exibirá 20 produtos demonstrativos.
+Sem API, feed ou cadastro, o site não consegue inventar links exatos de produtos. Por isso, os itens de exemplo levam a uma busca específica na loja e aparecem marcados como Exemplo.
 
-Para cadastrar uma oferta real, adicione uma linha na tabela `offers` e preencha:
-
-- name
-- brand
-- category
-- store
-- price
-- old_price
-- shipping_text
-- installments
-- image_url
-- product_url
-- affiliate_url
-- rating
-- reviews
-
-No campo `affiliate_url`, use seu link de afiliado do Mercado Livre ou Shopee.
-
-## Importante
-
-O GitHub Pages publica apenas o que está dentro do repositório. A pasta `assets` precisa ser enviada junto, senão as imagens não aparecerão.
+Quando uma oferta real for cadastrada no Supabase, o botão muda para Ver produto e abre o link exato.
