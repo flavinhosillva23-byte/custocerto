@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>Custo Certo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar"><div class="brand"><div class="logo">CC</div><div><h1>Custo Certo</h1><p>Casa do Flávio e da Nathália</p></div></div><button id="themeBtn" class="icon">☾</button></header>
+<nav class="tabs">
+<button class="tab active" data-view="inicio">Início</button><button class="tab" data-view="produtos">Produtos</button>
+<button class="tab" data-view="comparar">Comparar</button><button class="tab" data-view="checklist">Checklist</button>
+<button class="tab" data-view="orcamento">Orçamento</button>
+</nav>
+<main class="container">
+<section id="inicio" class="view active">
+<div class="hero"><div><span class="eyebrow">Planejamento da casa</span><h2>Compare preços antes de comprar</h2><p>Cadastre ofertas, acompanhe preços alvo e organize tudo o que vocês ainda precisam.</p><button class="primary" data-go="produtos">Ver produtos</button></div><div class="stats"><div><span>Itens</span><strong id="statItems">0</strong></div><div><span>Comprados</span><strong id="statBought">0</strong></div><div><span>Boas ofertas</span><strong id="statDeals">0</strong></div></div></div>
+<div class="title"><div><span class="eyebrow">Destaques</span><h3>Prioridades do momento</h3></div></div><div id="priorityGrid" class="grid"></div>
+<div class="title"><div><span class="eyebrow">Resumo</span><h3>Por ambiente</h3></div></div><div id="categorySummary" class="summary"></div>
+</section>
+
+<section id="produtos" class="view">
+<div class="title wrap"><div><span class="eyebrow">Catálogo</span><h2>Produtos da casa</h2></div><button id="addProductBtn" class="primary">Adicionar produto</button></div>
+<div class="filters"><input id="searchInput" placeholder="Pesquisar produto ou marca"><select id="categoryFilter"><option value="">Todas as categorias</option></select><select id="statusFilter"><option value="">Todos</option><option value="comprado">Comprados</option><option value="pendente">Pendentes</option><option value="favorito">Favoritos</option></select></div>
+<div id="productsGrid" class="grid"></div>
+</section>
+
+<section id="comparar" class="view"><div class="title"><div><span class="eyebrow">Comparador</span><h2>Compare até 4 produtos</h2></div></div><div id="compareEmpty" class="empty">Marque produtos com “Comparar”.</div><div id="compareGrid" class="compare"></div></section>
+
+<section id="checklist" class="view"><div class="title wrap"><div><span class="eyebrow">Organização</span><h2>Checklist da casa</h2></div><button id="resetChecklistBtn" class="secondary">Desmarcar todos</button></div><div id="checklistContent"></div></section>
+
+<section id="orcamento" class="view"><div class="title"><div><span class="eyebrow">Finanças</span><h2>Orçamento da casa</h2></div></div>
+<div class="card budget-form"><label>Orçamento total<input id="budgetInput" type="number" min="0" step="100"></label><button id="saveBudgetBtn" class="primary">Salvar</button></div>
+<div class="budget-grid"><div><span>Orçamento</span><strong id="budgetTotal"></strong></div><div><span>Já gasto</span><strong id="budgetSpent"></strong></div><div><span>Saldo</span><strong id="budgetBalance"></strong></div><div><span>Previsto</span><strong id="budgetPlanned"></strong></div></div>
+<div class="card"><div class="progress-head"><span>Uso do orçamento</span><strong id="budgetPercent">0%</strong></div><div class="progress"><div id="budgetBar"></div></div></div>
+<div class="card"><h3>Valores por categoria</h3><div id="budgetByCategory"></div></div>
+</section>
+</main>
+
+<div id="productModal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">Produto</h3><button class="icon close-modal">×</button></div>
+<form id="productForm"><input id="productId" type="hidden"><label>Produto<input id="productName" required></label><label>Marca<input id="productBrand"></label><label>Categoria<select id="productCategory"></select></label><label>Preço alvo<input id="productTarget" type="number" min="0" step="0.01" required></label><label>Melhor preço<input id="productPrice" type="number" min="0" step="0.01"></label><label>Loja<input id="productStore"></label><label class="full">Link da oferta<input id="productLink" type="url"></label><label class="full">Observações<textarea id="productNotes" rows="3"></textarea></label><div class="actions full"><button type="button" class="secondary close-modal">Cancelar</button><button class="primary">Salvar</button></div></form>
+</div></div>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
