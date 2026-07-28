@@ -1,10 +1,13 @@
 # Custo Certo
 
-## Publicação no GitHub Pages
+Site estático completo para planejamento e comparação de compras da casa.
 
-1. Envie o conteúdo desta pasta para a raiz do repositório.
-2. Confirme que `package.json`, `index.html`, `src` e `.github` aparecem diretamente na página inicial do repositório.
-3. Em **Settings > Pages**, selecione **GitHub Actions**.
-4. Abra a aba **Actions** e aguarde o processo `Publicar Custo Certo` ficar verde.
+## Como publicar
 
-Importante: não selecione “Deploy from a branch”, pois o código React precisa ser compilado antes da publicação.
+1. Apague os arquivos antigos do repositório.
+2. Envie todos os arquivos desta pasta para a raiz do repositório, inclusive a pasta `.github`.
+3. Em **Settings > Pages**, deixe **Source: GitHub Actions**.
+4. Abra **Actions** e aguarde **Publicar Custo Certo** ficar verde.
+5. Abra o endereço do site e pressione `Ctrl + F5` uma vez.
+
+Este projeto não usa React, Vite ou npm. Portanto, não existe etapa de compilação e o erro de `src/main.jsx` não ocorrerá.
