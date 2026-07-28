@@ -1,24 +1,21 @@
-# Custo Certo 4.0
+# Custo Certo — Casa do Flávio & Nathália
 
-Reconstrução em React, Vite, Tailwind CSS e estrutura pronta para Supabase.
+Site em React + Vite para comparar preços e planejar as compras da casa.
 
 ## Recursos
 
-- Visual claro e responsivo
-- Pesquisa por marca e modelo
-- Catálogo com filtros
-- Página individual de cada TV
-- Nota Custo Certo
-- Histórico de preços
-- Comparação de até quatro modelos
-- Mostrar somente diferenças
-- Resumo automático da comparação
-- GitHub Actions para publicar no GitHub Pages
-- HashRouter para evitar erro 404 nas páginas
+- Catálogo organizado por cômodo
+- Busca, categorias e ordenação
+- Preço alvo e melhor oferta
+- Comparação de até 4 produtos
+- Favoritos
+- Checklist do que já foi comprado
+- Controle de orçamento
+- Edição local dos preços
+- Dados salvos no navegador com localStorage
+- Layout responsivo para celular
 
-## Testar no computador
-
-Instale Node.js 20 ou superior.
+## Rodar no computador
 
 ```bash
 npm install
@@ -27,24 +24,11 @@ npm run dev
 
 ## Publicar no GitHub Pages
 
-1. Faça backup do repositório atual.
-2. Apague os arquivos antigos.
-3. Envie todos os arquivos deste projeto para a raiz do repositório `custocerto`.
-4. Abra **Settings > Pages**.
-5. Em **Source**, selecione **GitHub Actions**.
-6. Faça um novo commit.
-7. Abra a aba **Actions** e aguarde o processo terminar.
+O projeto já está configurado para o repositório `custocerto` com `base: '/custocerto/'`.
 
-O site deverá continuar em:
+1. Envie todos os arquivos ao GitHub.
+2. No repositório, abra **Settings > Pages**.
+3. Em **Build and deployment**, escolha **GitHub Actions**.
+4. O workflow fará a publicação automaticamente.
 
-`https://flavinhosillva23-byte.github.io/custocerto/`
-
-## Supabase
-
-Copie `.env.example` para `.env` e informe sua URL e chave pública.
-
-Os produtos continuam em `src/data/products.json` como fallback. A próxima etapa é substituir essa leitura por consultas ao Supabase.
-
-## Dados demonstrativos
-
-Preços, notas, brilho e especificações deste protótipo são demonstrativos e precisam ser revisados antes de uso comercial.
+Os preços do catálogo são referências iniciais e podem ser alterados dentro do próprio site.
