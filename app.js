@@ -8,7 +8,7 @@ function state(p){if(!p.price)return["Sem oferta",""];return p.price<=p.target?[
 function nav(v){$$(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===v));$$(".view").forEach(s=>s.classList.toggle("active",s.id===v));scrollTo({top:0,behavior:"smooth"})}
 $$(".tab").forEach(b=>b.onclick=()=>nav(b.dataset.view));$$("[data-go]").forEach(b=>b.onclick=()=>nav(b.dataset.go));
 function cats(){let s=$("#categoryFilter").value;$("#categoryFilter").innerHTML='<option value="">Todas as categorias</option>'+DEFAULT_CATEGORIES.map(c=>`<option>${c}</option>`).join("");$("#categoryFilter").value=s;$("#productCategory").innerHTML=DEFAULT_CATEGORIES.map(c=>`<option>${c}</option>`).join("")}
-function card(p){let [label,cls]=state(p),fav=favorites.has(p.id),cmp=compare.has(p.id);return `<article class="product"><div class="product-top"><div class="product-icon">${p.icon||"📦"}</div><span class="badge ${cls}">${label}</span></div><div><h3>${esc(p.name)}</h3><div class="meta">${esc(p.brand||"Sem marca definida")} · ${esc(p.category)}</div></div><div class="price-row"><div><div class="price">${p.price?money(p.price):"A pesquisar"}</div><div class="target">Alvo: ${money(p.target)}</div></div><div class="meta">${esc(p.store)}</div></div><div class="product-actions"><button class="small ${fav?"active":""}" data-a="fav" data-id="${p.id}">${fav?"★ Favorito":"☆ Favoritar"}</button><button class="small ${cmp?"active":""}" data-a="compare" data-id="${p.id}">${cmp?"✓ Comparando":"Comparar"}</button><button class="small" data-a="edit" data-id="${p.id}">Editar</button><button class="small ${bought.has(p.id)?"active":""}" data-a="bought" data-id="${p.id}">${bought.has(p.id)?"Comprado":"Marcar comprado"}</button>${p.link?`<a class="small link" href="${p.link}" target="_blank">Abrir oferta</a>`:""}<button class="small danger" data-a="delete" data-id="${p.id}">Excluir</button></div></article>`}
+function card(p){let [label,cls]=state(p),fav=favorites.has(p.id),cmp=compare.has(p.id);let auto=p.autoUpdated?`<div class="auto-note">Atualizado automaticamente${p.installments?` · ${esc(p.installments)}`:""}<span class="auto-source">Mercado Livre</span></div>`:"";return `<article class="product"><div class="product-top"><div class="product-icon">${p.icon||"📦"}</div><span class="badge ${cls}">${label}</span></div><div><h3>${esc(p.name)}</h3><div class="meta">${esc(p.brand||"Sem marca definida")} · ${esc(p.category)}</div></div><div class="price-row"><div><div class="price">${p.price?money(p.price):"A pesquisar"}</div><div class="target">Alvo: ${money(p.target)}</div>${auto}</div><div class="meta">${esc(p.store)}</div></div><div class="product-actions"><button class="small ${fav?"active":""}" data-a="fav" data-id="${p.id}">${fav?"★ Favorito":"☆ Favoritar"}</button><button class="small ${cmp?"active":""}" data-a="compare" data-id="${p.id}">${cmp?"✓ Comparando":"Comparar"}</button><button class="small" data-a="edit" data-id="${p.id}">Editar</button><button class="small ${bought.has(p.id)?"active":""}" data-a="bought" data-id="${p.id}">${bought.has(p.id)?"Comprado":"Marcar comprado"}</button>${p.link?`<a class="small link" href="${p.link}" target="_blank">Abrir oferta</a>`:""}<button class="small danger" data-a="delete" data-id="${p.id}">Excluir</button></div></article>`}
 function bind(el){el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>action(b.dataset.a,b.dataset.id))}
 function action(a,id){if(a==="fav")favorites.has(id)?favorites.delete(id):favorites.add(id);if(a==="compare"){if(compare.has(id))compare.delete(id);else if(compare.size<4)compare.add(id);else return alert("Máximo de 4 produtos.")}if(a==="bought")bought.has(id)?bought.delete(id):bought.add(id);if(a==="edit")return openModal(byId(id));if(a==="delete"){if(!confirm("Excluir este produto?"))return;products=products.filter(p=>p.id!==id);bought.delete(id);favorites.delete(id);compare.delete(id)}save();render()}
 function render(){cats();$("#statItems").textContent=products.length;$("#statBought").textContent=bought.size;$("#statDeals").textContent=products.filter(p=>p.price>0&&p.price<=p.target).length;
@@ -25,4 +25,26 @@ function openModal(p=null){$("#modalTitle").textContent=p?"Editar produto":"Adic
 function closeModal(){$("#productModal").classList.add("hidden")}$("#addProductBtn").onclick=()=>openModal();$$(".close-modal").forEach(b=>b.onclick=closeModal);$("#productModal").onclick=e=>{if(e.target.id==="productModal")closeModal()};
 $("#productForm").onsubmit=e=>{e.preventDefault();let id=$("#productId").value||"p"+Date.now(),d={id,name:$("#productName").value.trim(),brand:$("#productBrand").value.trim(),category:$("#productCategory").value,target:Number($("#productTarget").value)||0,price:Number($("#productPrice").value)||0,store:$("#productStore").value.trim(),link:$("#productLink").value.trim(),notes:$("#productNotes").value.trim(),priority:99,icon:"📦"},i=products.findIndex(p=>p.id===id);i>=0?products[i]={...products[i],...d}:products.push(d);save();closeModal();render()};
 if(localStorage.getItem(K.theme)==="dark")document.body.classList.add("dark");$("#themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem(K.theme,document.body.classList.contains("dark")?"dark":"light")};
-if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));render();
+async function loadAutomaticOffers(){
+  const status=$("#autoStatus");
+  try{
+    const r=await fetch(`./data/ofertas.json?t=${Date.now()}`,{cache:"no-store"});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const data=await r.json();
+    let changed=false;
+    Object.entries(data.products||{}).forEach(([id,o])=>{
+      const p=byId(id);
+      if(!p||!Number(o.price))return;
+      p.price=Number(o.price);p.store=o.store||"Mercado Livre";p.link=o.link||p.link;p.installments=o.installments||"";p.autoUpdated=true;p.checkedAt=o.checkedAt||data.updatedAt;changed=true;
+    });
+    if(changed)save();
+    if(data.updatedAt){
+      const d=new Date(data.updatedAt);
+      const erros=(data.errors||[]).length;
+      status.className=`auto-status ${erros?"warn":"ok"}`;
+      status.innerHTML=`<strong>Atualização automática:</strong> ${d.toLocaleString("pt-BR")}. ${data.offers?.length||0} oferta(s) compatível(is) encontrada(s) no Mercado Livre.${erros?` ${erros} consulta(s) tiveram falha temporária.`:""}`;
+    }
+  }catch(e){status.className="auto-status warn";status.innerHTML="<strong>Atualização automática:</strong> os dados ainda não foram gerados. Execute o workflow no GitHub Actions."}
+  render();
+}
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));render();loadAutomaticOffers();
